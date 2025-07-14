@@ -58,7 +58,7 @@ export default function ProfileSection() {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:3001/api/logout', {
+      await fetch(`${import.meta.env.VITE_APP_API_URL}/logout`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -84,16 +84,16 @@ export default function ProfileSection() {
       let endpoint = '';
       switch (role) {
         case 'Admin':
-          endpoint = `http://localhost:3001/api/users/${id}`;
+          endpoint = `${import.meta.env.VITE_APP_API_URL}/users/${id}`;
           break;
         case 'Teacher':
-          endpoint = `http://localhost:3001/api/teachers/${id}`;
+          endpoint = `${import.meta.env.VITE_APP_API_URL}/teachers/${id}`;
           break;
         case 'Student':
-          endpoint = `http://localhost:3001/api/students/${id}`;
+          endpoint = `${import.meta.env.VITE_APP_API_URL}students/${id}`;
           break;
         case 'School':
-          endpoint = `http://localhost:3001/api/schools/${id}`;
+          endpoint = `${import.meta.env.VITE_APP_API_URL}/schools/${id}`;
           break;
         default:
           return;
@@ -136,7 +136,7 @@ export default function ProfileSection() {
       profile?.school_code && profile?.academic_year ? `${profile.school_code}-${profile.academic_year}` : profile?.school_code || '';
   }
 
-  const img = profile?.profilePic ? `http://localhost:3001${profile.profilePic}` : User1;
+  const img = profile?.profilePic ? `${import.meta.env.BASE_URL_VITE}${profile.profilePic}` : User1;
 
   return (
     <>
