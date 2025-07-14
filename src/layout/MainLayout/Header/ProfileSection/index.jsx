@@ -136,8 +136,7 @@ export default function ProfileSection() {
       profile?.school_code && profile?.academic_year ? `${profile.school_code}-${profile.academic_year}` : profile?.school_code || '';
   }
 
-  const img = profile?.profilePic ? `${import.meta.env.BASE_URL_VITE}${profile.profilePic}` : User1;
-
+  const img = profile?.profilePic ? `${import.meta.env.VITE_BASE_URL}${profile.profilePic}` : User1;
   return (
     <>
       <Chip
