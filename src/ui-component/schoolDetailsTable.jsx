@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Typography, useMediaQuery } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Box, useMediaQuery, useTheme, Fab } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import AddIcon from '@mui/icons-material/Add';
 import SchoolDetailsDialog from './SchoolDetailDialog';
 
 export default function SchoolTableWithPopup() {
@@ -19,27 +19,28 @@ export default function SchoolTableWithPopup() {
     page: 0
   });
 
-  useEffect(() => {
-    const fetchSchools = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/schools`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const formatted = res.data.map((school, index) => ({
-          id: school._id || index,
-          ...school
-        }));
-        setSchools(formatted);
-      } catch (err) {
-        if (err.response?.status === 401) {
-          localStorage.clear();
-          navigate('/auth/login');
-        } else {
-          console.error('Fetch error:', err);
-        }
+  const fetchSchools = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/schools`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const formatted = res.data.map((school, index) => ({
+        id: school._id || index,
+        ...school
+      }));
+      setSchools(formatted);
+    } catch (err) {
+      if (err.response?.status === 401) {
+        localStorage.clear();
+        navigate('/auth/login');
+      } else {
+        console.error('Fetch error:', err);
       }
-    };
+    }
+  };
+
+  useEffect(() => {
     fetchSchools();
   }, []);
 
@@ -58,7 +59,7 @@ export default function SchoolTableWithPopup() {
   ].filter(Boolean); // remove false columns on mobile
 
   return (
-    <Box sx={{ height: 'auto', width: '100%', overflowX: 'auto' }}>
+    <Box sx={{ height: 'auto', width: '100%', overflowX: 'auto', position: 'relative' }}>
       <DataGrid
         rows={schools}
         columns={columns}
@@ -67,7 +68,7 @@ export default function SchoolTableWithPopup() {
         paginationModel={paginationModel}
         onPaginationModelChange={(model) => setPaginationModel(model)}
         onRowClick={handleRowClick}
-        components={{ Toolbar: GridToolbar }}
+        slots={{ toolbar: GridToolbar }}
         disableRowSelectionOnClick
         sx={{
           minWidth: isMobile ? '600px' : '100%',
@@ -75,7 +76,32 @@ export default function SchoolTableWithPopup() {
         }}
       />
 
-      <SchoolDetailsDialog open={dialogOpen} onClose={() => setDialogOpen(false)} schoolId={selectedSchoolId} />
+      <SchoolDetailsDialog
+        open={dialogOpen}
+        onClose={() => {
+          setDialogOpen(false);
+          fetchSchools(); // refresh on close
+        }}
+        schoolId={selectedSchoolId}
+      />
+
+      <Fab
+        color="primary"
+        aria-label="add"
+        onClick={() => {
+          setSelectedSchoolId(null); // create mode
+          setDialogOpen(true);
+        }}
+        sx={{
+          position: 'fixed',
+          bottom: isMobile ? 16 : 32,
+          right: isMobile ? 16 : 32,
+          zIndex: 1100,
+          boxShadow: 6
+        }}
+      >
+        <AddIcon />
+      </Fab>
     </Box>
   );
 }

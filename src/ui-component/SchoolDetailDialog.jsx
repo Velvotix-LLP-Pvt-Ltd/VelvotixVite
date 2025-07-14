@@ -24,6 +24,7 @@ import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SaveIcon from '@mui/icons-material/Save';
 import ErrorIcon from '@mui/icons-material/Error';
 
 const InfoCard = ({ title, children }) => (
@@ -63,21 +64,62 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    if (open && schoolId) {
-      const fetchSchool = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/schools/${schoolId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setFormData(res.data);
-        } catch (err) {
-          console.error('Error fetching school:', err);
-        }
-      };
-      fetchSchool();
+    if (open) {
+      if (!schoolId) {
+        setFormData({
+          school_code: '',
+          school_name: '',
+          academic_year: '',
+          established_year: '',
+          school_category: '',
+          school_type: '',
+          school_management: '',
+          affiliation_board: '',
+          school_shift: '',
+          school_building_status: '',
+          academic_session_start_month: '',
+          location: {},
+          headmaster: {},
+          enrollment_summary: {},
+          staff_summary: {},
+          infrastructure: {},
+          toilets: {},
+          water_facility: {},
+          mid_day_meal: {},
+          school_inspection: {},
+          pta_meetings_last_year: '',
+          classes_offered: []
+        });
+        setIsEditing(true);
+      } else {
+        const fetchSchool = async () => {
+          try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/schools/${schoolId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setFormData(res.data);
+          } catch (err) {
+            console.error('Error fetching school:', err);
+          }
+        };
+        fetchSchool();
+      }
     }
   }, [open, schoolId]);
+
+  const handleCreateSchool = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${import.meta.env.VITE_APP_API_URL}/schools`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('School created:', res.data);
+      onClose(); // close dialog after creation
+    } catch (err) {
+      console.error('Error creating school:', err);
+    }
+  };
 
   const toggleEdit = () => setIsEditing((prev) => !prev);
 
@@ -120,10 +162,25 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullScreen={isMobile} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullScreen={false}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          m: isMobile ? '2%' : 'auto',
+          width: isMobile ? '96%' : '100%',
+          height: isMobile ? '96%' : 'auto',
+          borderRadius: 2
+        }
+      }}
+    >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box display="flex" alignItems="center">
-          <Typography variant="h3">{formData?.school_name || 'Loading...'}</Typography>
+          <Typography variant="h3">{!schoolId ? 'Add New School' : formData?.school_name || 'Loading...'}</Typography>
+
           {renderSaveStatusIcon()}
         </Box>
         <IconButton onClick={toggleEdit} aria-label="edit" size="small">
@@ -531,6 +588,15 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 onChange={handleChange}
               />
             </InfoCard>
+            {!schoolId && (
+              <Box display="flex" justifyContent="flex-end" p={2}>
+                <Tooltip title="Create School">
+                  <IconButton color="primary" onClick={handleCreateSchool} disabled={!formData?.school_name || !formData?.school_code}>
+                    <SaveIcon fontSize="large" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
           </Box>
         )}
       </DialogContent>
