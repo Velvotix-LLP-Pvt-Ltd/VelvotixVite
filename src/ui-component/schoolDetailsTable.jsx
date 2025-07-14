@@ -14,6 +14,11 @@ export default function SchoolTableWithPopup() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 10,
+    page: 0
+  });
+
   useEffect(() => {
     const fetchSchools = async () => {
       try {
@@ -54,14 +59,13 @@ export default function SchoolTableWithPopup() {
 
   return (
     <Box sx={{ height: 'auto', width: '100%', overflowX: 'auto' }}>
-      <Typography variant="h6" sx={{ mb: 1 }}>
-        Schools Master Table
-      </Typography>
-
       <DataGrid
         rows={schools}
         columns={columns}
-        pageSize={10}
+        pagination
+        pageSizeOptions={[10, 20, 50, 100]}
+        paginationModel={paginationModel}
+        onPaginationModelChange={(model) => setPaginationModel(model)}
         onRowClick={handleRowClick}
         components={{ Toolbar: GridToolbar }}
         disableRowSelectionOnClick
