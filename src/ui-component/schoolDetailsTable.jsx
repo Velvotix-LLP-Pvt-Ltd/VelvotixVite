@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, useMediaQuery, useTheme, Fab } from '@mui/material';
+import { Box, useMediaQuery, useTheme, Fab, Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import SchoolDetailsDialog from './SchoolDetailDialog';
 
 export default function SchoolTableWithPopup() {
   const [schools, setSchools] = useState([]);
   const [selectedSchoolId, setSelectedSchoolId] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -49,14 +52,46 @@ export default function SchoolTableWithPopup() {
     setDialogOpen(true);
   };
 
+  const handleDelete = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${import.meta.env.VITE_APP_API_URL}/schools/${deleteId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setConfirmOpen(false);
+      setDeleteId(null);
+      fetchSchools();
+    } catch (err) {
+      console.error('Delete error:', err);
+    }
+  };
+
   const columns = [
     { field: 'school_code', headerName: 'School Code', minWidth: 120, flex: 1 },
     { field: 'school_name', headerName: 'School Name', minWidth: 200, flex: 2 },
     { field: 'academic_year', headerName: 'Academic Year', minWidth: 120, flex: 1 },
     !isMobile && { field: 'school_category', headerName: 'Category', minWidth: 150, flex: 1 },
     !isMobile && { field: 'school_type', headerName: 'Type', minWidth: 150, flex: 1 },
-    !isMobile && { field: 'affiliation_board', headerName: 'Board', minWidth: 150, flex: 1 }
-  ].filter(Boolean); // remove false columns on mobile
+    !isMobile && { field: 'affiliation_board', headerName: 'Board', minWidth: 150, flex: 1 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      sortable: false,
+      renderCell: (params) => (
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteId(params.row._id);
+            setConfirmOpen(true);
+          }}
+          color="error"
+        >
+          <DeleteIcon />
+        </IconButton>
+      ),
+      width: 100
+    }
+  ].filter(Boolean);
 
   return (
     <Box sx={{ height: 'auto', width: '100%', overflowX: 'auto', position: 'relative' }}>
@@ -80,7 +115,7 @@ export default function SchoolTableWithPopup() {
         open={dialogOpen}
         onClose={() => {
           setDialogOpen(false);
-          fetchSchools(); // refresh on close
+          fetchSchools();
         }}
         schoolId={selectedSchoolId}
       />
@@ -89,7 +124,7 @@ export default function SchoolTableWithPopup() {
         color="primary"
         aria-label="add"
         onClick={() => {
-          setSelectedSchoolId(null); // create mode
+          setSelectedSchoolId(null);
           setDialogOpen(true);
         }}
         sx={{
@@ -102,6 +137,17 @@ export default function SchoolTableWithPopup() {
       >
         <AddIcon />
       </Fab>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>Are you sure you want to delete this school?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

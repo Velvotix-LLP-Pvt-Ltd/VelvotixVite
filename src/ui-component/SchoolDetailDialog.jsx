@@ -14,31 +14,40 @@ import {
   TextField,
   Tooltip,
   CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   Checkbox,
   FormControlLabel,
   MenuItem,
   Select,
   InputLabel
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SaveIcon from '@mui/icons-material/Save';
+import { IconEye } from '@tabler/icons-react';
 import ErrorIcon from '@mui/icons-material/Error';
 
-const InfoCard = ({ title, children }) => (
-  <Card variant="outlined" sx={{ mb: 2 }}>
-    <CardContent>
-      <Typography variant="h6" gutterBottom>
-        {title}
-      </Typography>
-      <Grid container spacing={2}>
-        {children}
-      </Grid>
-    </CardContent>
-  </Card>
-);
+const InfoCard = ({ title, children }) => {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)} sx={{ mb: 2 }}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Typography variant="h6">{title}</Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Grid container spacing={2}>
+          {children}
+        </Grid>
+      </AccordionDetails>
+    </Accordion>
+  );
+};
 
 const InfoItem = ({ label, value, field, isEditing, onChange, type = 'text' }) => (
   <Grid item xs={12} sm={6} md={4}>
@@ -63,9 +72,11 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const isCreationMode = !schoolId;
+
   useEffect(() => {
     if (open) {
-      if (!schoolId) {
+      if (isCreationMode) {
         setFormData({
           school_code: '',
           school_name: '',
@@ -78,15 +89,52 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
           school_shift: '',
           school_building_status: '',
           academic_session_start_month: '',
-          location: {},
-          headmaster: {},
-          enrollment_summary: {},
-          staff_summary: {},
-          infrastructure: {},
-          toilets: {},
-          water_facility: {},
-          mid_day_meal: {},
-          school_inspection: {},
+          location: {
+            state: '',
+            state_code: '',
+            district: '',
+            district_code: '',
+            block: '',
+            cluster: '',
+            village_town: '',
+            pin_code: '',
+            geo: { latitude: '', longitude: '' },
+            urban_rural: ''
+          },
+          headmaster: { name: '', mobile: '', email: '' },
+          enrollment_summary: { total_students: '', boys: '', girls: '', cwsn: '' },
+          staff_summary: {
+            total_teachers: '',
+            male_teachers: '',
+            female_teachers: '',
+            trained_teachers: '',
+            non_teaching_staff: ''
+          },
+          infrastructure: {
+            total_classrooms: '',
+            rooms_condition: {
+              good: '',
+              require_minor_repair: '',
+              require_major_repair: ''
+            },
+            electricity: false,
+            internet: false,
+            computer_lab: false,
+            number_of_computers: '',
+            library: { available: false, books_count: '' },
+            playground: false,
+            boundary_wall: '',
+            ramp_available: false,
+            kitchen_shed: false
+          },
+          toilets: {
+            boys: { total: '', functional: '' },
+            girls: { total: '', functional: '' },
+            cwsn: { total: '', functional: '', ramp_accessible: false }
+          },
+          water_facility: { drinking_water_available: false, source: '' },
+          mid_day_meal: { provided: false, cooked_on_premises: false, meal_days_per_week: '' },
+          school_inspection: { last_inspected_on: '', inspected_by: '', remarks: '' },
           pta_meetings_last_year: '',
           classes_offered: []
         });
@@ -99,6 +147,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
               headers: { Authorization: `Bearer ${token}` }
             });
             setFormData(res.data);
+            setIsEditing(false); // Always start in view mode
           } catch (err) {
             console.error('Error fetching school:', err);
           }
@@ -109,19 +158,36 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
   }, [open, schoolId]);
 
   const handleCreateSchool = async () => {
+    setSaveStatus('saving');
     try {
       const token = localStorage.getItem('token');
       const res = await axios.post(`${import.meta.env.VITE_APP_API_URL}/schools`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log('School created:', res.data);
-      onClose(); // close dialog after creation
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(null), 3000);
+      onClose(); // close dialog after successful save
     } catch (err) {
       console.error('Error creating school:', err);
+      setSaveStatus('error');
     }
   };
 
-  const toggleEdit = () => setIsEditing((prev) => !prev);
+  const handleSaveClick = () => {
+    if (isCreationMode) {
+      handleCreateSchool();
+    } else {
+      setIsEditing((prev) => !prev);
+    }
+  };
+
+  const renderSaveStatusIcon = () => {
+    if (saveStatus === 'saving') return <CircularProgress size={16} sx={{ ml: 1 }} />;
+    if (saveStatus === 'saved') return <CheckCircleIcon color="success" fontSize="small" sx={{ ml: 1 }} />;
+    if (saveStatus === 'error') return <ErrorIcon color="error" fontSize="small" sx={{ ml: 1 }} />;
+    return null;
+  };
 
   const handleChange = (fieldPath, value) => {
     const keys = fieldPath.split('.');
@@ -133,7 +199,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
         obj = obj[keys[i]];
       }
       obj[keys[keys.length - 1]] = value;
-      autoSaveUpdate(updated);
+      if (!isCreationMode) autoSaveUpdate(updated);
       return updated;
     });
   };
@@ -154,13 +220,6 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
     }
   };
 
-  const renderSaveStatusIcon = () => {
-    if (saveStatus === 'saving') return <CircularProgress size={16} sx={{ ml: 1 }} />;
-    if (saveStatus === 'saved') return <CheckCircleIcon color="success" fontSize="small" sx={{ ml: 1 }} />;
-    if (saveStatus === 'error') return <ErrorIcon color="error" fontSize="small" sx={{ ml: 1 }} />;
-    return null;
-  };
-
   return (
     <Dialog
       open={open}
@@ -179,13 +238,14 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
     >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box display="flex" alignItems="center">
-          <Typography variant="h3">{!schoolId ? 'Add New School' : formData?.school_name || 'Loading...'}</Typography>
-
+          <Typography variant="h3">{isCreationMode ? 'Add New School' : formData?.school_name || 'Loading...'}</Typography>
           {renderSaveStatusIcon()}
         </Box>
-        <IconButton onClick={toggleEdit} aria-label="edit" size="small">
-          <EditIcon />
-        </IconButton>
+        <Tooltip title={isCreationMode ? 'Create School' : isEditing ? 'Switch to View Mode' : 'Switch to Edit Mode'}>
+          <IconButton onClick={handleSaveClick} aria-label="action" size="small">
+            {isCreationMode ? <SaveIcon /> : isEditing ? <IconEye /> : <EditIcon />}
+          </IconButton>
+        </Tooltip>
       </DialogTitle>
       <DialogContent dividers sx={{ p: 3 }}>
         {formData && (
@@ -588,15 +648,6 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 onChange={handleChange}
               />
             </InfoCard>
-            {!schoolId && (
-              <Box display="flex" justifyContent="flex-end" p={2}>
-                <Tooltip title="Create School">
-                  <IconButton color="primary" onClick={handleCreateSchool} disabled={!formData?.school_name || !formData?.school_code}>
-                    <SaveIcon fontSize="large" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            )}
           </Box>
         )}
       </DialogContent>
