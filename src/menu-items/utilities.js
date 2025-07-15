@@ -1,5 +1,5 @@
 // assets
-import { IconTypography, IconPalette, IconShadow, IconWindmill, IconSchool } from '@tabler/icons-react';
+import { IconTypography, IconPalette, IconShadow, IconWindmill, IconSchool, IconBook } from '@tabler/icons-react';
 
 // constant
 const icons = {
@@ -7,7 +7,8 @@ const icons = {
   IconPalette,
   IconShadow,
   IconWindmill,
-  IconSchool
+  IconSchool,
+  IconBook
 };
 
 // ==============================|| UTILITIES MENU ITEMS ||============================== //
@@ -23,6 +24,14 @@ const Admin = {
       type: 'item',
       url: '/schools',
       icon: icons.IconSchool,
+      breadcrumbs: true
+    },
+    {
+      id: 'teachers',
+      title: 'Teachers',
+      type: 'item',
+      url: '/teachers',
+      icon: icons.IconBook,
       breadcrumbs: true
     }
   ]

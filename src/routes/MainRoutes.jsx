@@ -16,6 +16,7 @@ import AuthGuard from './AuthGaurd';
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 const Schools = Loadable(lazy(() => import('views/schools')));
+const Teachers = Loadable(lazy(() => import('views/teachers')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -59,6 +60,10 @@ const MainRoutes = {
     {
       path: '/schools',
       element: <Schools />
+    },
+    {
+      path: '/teachers',
+      element: <Teachers />
     }
   ]
 };
