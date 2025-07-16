@@ -15,6 +15,12 @@ export default function TeacherTableWithPopup() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [selectedSchoolId, setSelectedSchoolId] = useState(null);
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState({
+    gender: false,
+    designation: false,
+    qualification: false,
+    doj: false
+  });
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -173,6 +179,8 @@ export default function TeacherTableWithPopup() {
         }}
         slots={{ toolbar: GridToolbar }}
         disableRowSelectionOnClick
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={(model) => setColumnVisibilityModel(model)}
         sx={{ minWidth: isMobile ? '600px' : '100%', backgroundColor: '#fff' }}
       />
 

@@ -22,13 +22,29 @@ export function SchoolSelectDropdown({ value, onChange }) {
     fetchSchools();
   }, []);
 
+  const selectedSchool = options.find((s) => s.school_code === value);
+
   return (
     <Box sx={{ minWidth: 250 }}>
       <Autocomplete
         options={options}
-        getOptionLabel={(option) => `${option.school_code} - ${option.school_name}`}
+        getOptionLabel={
+          (option) => (typeof option === 'string' ? option : option.school_code) // For selected value
+        }
+        renderOption={(props, option) => (
+          <Box component="li" {...props}>
+            {option.school_code} - {option.school_name}
+          </Box>
+        )}
+        filterOptions={(options, { inputValue }) =>
+          options.filter(
+            (option) =>
+              option.school_code?.toLowerCase().includes(inputValue.toLowerCase()) ||
+              option.school_name?.toLowerCase().includes(inputValue.toLowerCase())
+          )
+        }
         renderInput={(params) => <TextField {...params} label="School Code" size="small" fullWidth />}
-        value={options.find((s) => s.school_code === value) || null}
+        value={selectedSchool || null}
         onChange={(e, newValue) => onChange(newValue?.school_code || '')}
         inputValue={inputValue}
         onInputChange={(e, newInput) => setInputValue(newInput)}
