@@ -69,6 +69,7 @@ export default function ProfileSection() {
       console.error('Logout API error:', error);
     } finally {
       localStorage.clear();
+      localStorage.setItem('role', '');
       navigate('/auth/login');
     }
   };

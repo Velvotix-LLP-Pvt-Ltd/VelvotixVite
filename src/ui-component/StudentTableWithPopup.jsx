@@ -43,28 +43,44 @@ export default function StudentTableWithPopup() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
-  const role = localStorage.getItem('role');
-  const schoolId = localStorage.getItem('id');
-
   const fetchStudents = async () => {
     try {
       const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+      const id = localStorage.getItem('id');
+
+      let schoolFilterId = null;
+
+      if (role === 'School') {
+        schoolFilterId = id;
+      } else if (role === 'Teacher') {
+        const teacherRes = await axios.get(`${import.meta.env.VITE_APP_API_URL}/teachers/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        schoolFilterId = teacherRes.data.school?._id;
+      }
+
       const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/students`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const filtered = role === 'School' ? res.data.filter((s) => s.school?._id === schoolId) : res.data;
+
+      const filtered = role === 'Admin' ? res.data : res.data.filter((s) => s.school?._id === schoolFilterId);
+
       const formatted = filtered.map((s, i) => ({
         id: s._id || i,
         ...s,
         school_code: s.school?.school_code || '',
         school_id: s.school?._id || ''
       }));
+
       setStudents(formatted);
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.clear();
         navigate('/auth/login');
-      } else console.error('Error:', err);
+      } else {
+        console.error('Error:', err);
+      }
     }
   };
 

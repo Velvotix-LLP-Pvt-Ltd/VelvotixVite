@@ -1,65 +1,40 @@
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
-// project imports
 import NavItem from './NavItem';
 import NavGroup from './NavGroup';
-import menuItems from 'menu-items';
+import dashboard from 'menu-items/dashboard';
+import getMenuByRole from 'menu-items/utilities';
 
 import { useGetMenuMaster } from 'api/menu';
-
-// ==============================|| SIDEBAR MENU LIST ||============================== //
 
 function MenuList() {
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
 
   const [selectedID, setSelectedID] = useState('');
+  const [menuItems, setMenuItems] = useState([]);
 
-  const lastItem = null;
+  // Load menu items dynamically on mount or when role changes
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    const dynamicMenu = [dashboard, ...getMenuByRole(role)];
+    setMenuItems(dynamicMenu);
+  }, []);
 
-  let lastItemIndex = menuItems.items.length - 1;
-  let remItems = [];
-  let lastItemId;
-
-  if (lastItem && lastItem < menuItems.items.length) {
-    lastItemId = menuItems.items[lastItem - 1].id;
-    lastItemIndex = lastItem - 1;
-    remItems = menuItems.items.slice(lastItem - 1, menuItems.items.length).map((item) => ({
-      title: item.title,
-      elements: item.children,
-      icon: item.icon,
-      ...(item.url && {
-        url: item.url
-      })
-    }));
-  }
-
-  const navItems = menuItems.items.slice(0, lastItemIndex + 1).map((item, index) => {
+  const navItems = menuItems.map((item, index) => {
     switch (item.type) {
       case 'group':
-        if (item.url && item.id !== lastItemId) {
-          return (
-            <List key={item.id}>
-              <NavItem item={item} level={1} isParents setSelectedID={() => setSelectedID('')} />
-              {index !== 0 && <Divider sx={{ py: 0.5 }} />}
-            </List>
-          );
-        }
-
+        return <NavGroup key={item.id} setSelectedID={setSelectedID} selectedID={selectedID} item={item} />;
+      case 'item':
         return (
-          <NavGroup
-            key={item.id}
-            setSelectedID={setSelectedID}
-            selectedID={selectedID}
-            item={item}
-            lastItem={lastItem}
-            remItems={remItems}
-            lastItemId={lastItemId}
-          />
+          <List key={item.id}>
+            <NavItem item={item} level={1} isParents setSelectedID={() => setSelectedID('')} />
+            {index !== 0 && <Divider sx={{ py: 0.5 }} />}
+          </List>
         );
       default:
         return (

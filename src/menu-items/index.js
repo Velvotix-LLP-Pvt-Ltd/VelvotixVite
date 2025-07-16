@@ -1,12 +1,10 @@
 import dashboard from './dashboard';
-// import pages from './Schools';
-import utilities from './utilities';
-import other from './other';
+import getMenuByRole from './utilities';
 
-// ==============================|| MENU ITEMS ||============================== //
+const role = localStorage.getItem('role');
 
 const menuItems = {
-  items: [dashboard, utilities]
+  items: [dashboard, ...getMenuByRole(role)]
 };
 
 export default menuItems;

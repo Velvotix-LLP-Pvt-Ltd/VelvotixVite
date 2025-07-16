@@ -1,49 +1,94 @@
-// assets
-import { IconTypography, IconPalette, IconShadow, IconWindmill, IconSchool, IconBook, IconUsersGroup } from '@tabler/icons-react';
+// icons
+import { IconSchool, IconBook, IconUsersGroup } from '@tabler/icons-react';
 
-// constant
+// common icons map
 const icons = {
-  IconTypography,
-  IconPalette,
-  IconShadow,
-  IconWindmill,
   IconSchool,
   IconBook,
   IconUsersGroup
 };
 
-// ==============================|| UTILITIES MENU ITEMS ||============================== //
-
-const Admin = {
-  id: 'admin',
-  title: 'Admin',
-  type: 'group',
-  children: [
+// role-based menu definitions
+const menus = {
+  Admin: [
     {
-      id: 'schools',
-      title: 'Schools',
-      type: 'item',
-      url: '/schools',
-      icon: icons.IconSchool,
-      breadcrumbs: true
-    },
-    {
-      id: 'teachers',
-      title: 'Teachers',
-      type: 'item',
-      url: '/teachers',
-      icon: icons.IconBook,
-      breadcrumbs: true
-    },
-    {
-      id: 'students',
-      title: 'Students',
-      type: 'item',
-      url: '/students',
-      icon: icons.IconUsersGroup,
-      breadcrumbs: true
+      id: 'admin',
+      title: 'Admin',
+      type: 'group',
+      children: [
+        {
+          id: 'schools',
+          title: 'Schools',
+          type: 'item',
+          url: '/schools',
+          icon: icons.IconSchool,
+          breadcrumbs: true
+        },
+        {
+          id: 'teachers',
+          title: 'Teachers',
+          type: 'item',
+          url: '/teachers',
+          icon: icons.IconBook,
+          breadcrumbs: true
+        },
+        {
+          id: 'students',
+          title: 'Students',
+          type: 'item',
+          url: '/students',
+          icon: icons.IconUsersGroup,
+          breadcrumbs: true
+        }
+      ]
     }
-  ]
+  ],
+  School: [
+    {
+      id: 'school',
+      title: 'School',
+      type: 'group',
+      children: [
+        {
+          id: 'teachers',
+          title: 'Teachers',
+          type: 'item',
+          url: '/teachers',
+          icon: icons.IconBook,
+          breadcrumbs: true
+        },
+        {
+          id: 'students',
+          title: 'Students',
+          type: 'item',
+          url: '/students',
+          icon: icons.IconUsersGroup,
+          breadcrumbs: true
+        }
+      ]
+    }
+  ],
+  Teacher: [
+    {
+      id: 'teacher',
+      title: 'Teacher',
+      type: 'group',
+      children: [
+        {
+          id: 'students',
+          title: 'Students',
+          type: 'item',
+          url: '/students',
+          icon: icons.IconUsersGroup,
+          breadcrumbs: true
+        }
+      ]
+    }
+  ],
+  Student: []
 };
 
-export default Admin;
+// return menu by role
+const getMenuByRole = (role) => menus[role] || [];
+
+export default getMenuByRole;
