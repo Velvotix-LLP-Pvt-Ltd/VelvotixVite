@@ -21,6 +21,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import { IconEye } from '@tabler/icons-react';
 import axios from 'axios';
 import { SchoolSelectDropdown } from './schoolDropdowns';
+import UnauthorizedHandler from './UnauthorizedHandler';
 
 const InfoItem = ({ label, value, field, isEditing, onChange, type = 'text', disabled = false }) => (
   <Grid item xs={12} sm={6}>
@@ -75,6 +76,7 @@ export default function TeacherDetailsDialog({ open, onClose, teacherId, schoolV
               setFormData({ ...initialForm, school_code: res.data.school_code });
             })
             .catch((err) => {
+              UnauthorizedHandler(err);
               console.error('Error fetching school:', err);
               setFormData(initialForm); // fallback
             });
@@ -107,6 +109,7 @@ export default function TeacherDetailsDialog({ open, onClose, teacherId, schoolV
       setFormData(flat);
       setIsEditing(false);
     } catch (err) {
+      UnauthorizedHandler(err);
       console.error('Fetch teacher error:', err);
     }
   };
@@ -119,6 +122,7 @@ export default function TeacherDetailsDialog({ open, onClose, teacherId, schoolV
       });
       setSchoolsList(res.data);
     } catch (err) {
+      UnauthorizedHandler(err);
       console.error('Error fetching schools list:', err);
     }
   };
@@ -141,6 +145,7 @@ export default function TeacherDetailsDialog({ open, onClose, teacherId, schoolV
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
+      UnauthorizedHandler(err);
       console.error('Auto-save error:', err);
       setSaveStatus('error');
     }
@@ -157,6 +162,7 @@ export default function TeacherDetailsDialog({ open, onClose, teacherId, schoolV
       setTimeout(() => setSaveStatus(null), 3000);
       onClose();
     } catch (err) {
+      UnauthorizedHandler(err);
       console.error('Create error:', err);
       setSaveStatus('error');
     }

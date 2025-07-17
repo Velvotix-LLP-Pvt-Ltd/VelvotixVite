@@ -21,6 +21,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import axios from 'axios';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { SchoolSelectDropdown } from './schoolDropdowns';
+import UnauthorizedHandler from './UnauthorizedHandler';
 
 export default function StudentPopupDialog({ open, onClose, studentId }) {
   const [formData, setFormData] = useState(null);
@@ -101,6 +102,7 @@ export default function StudentPopupDialog({ open, onClose, studentId }) {
       setFormData(flat);
       setIsEditing(false);
     } catch (err) {
+      UnauthorizedHandler(err);
       console.error('Fetch error:', err);
     }
   };

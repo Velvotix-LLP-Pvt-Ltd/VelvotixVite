@@ -15,6 +15,7 @@ export default function TeacherTableWithPopup() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [selectedSchoolId, setSelectedSchoolId] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [columnVisibilityModel, setColumnVisibilityModel] = useState({
     gender: false,
     designation: false,
@@ -28,6 +29,7 @@ export default function TeacherTableWithPopup() {
   const [paginationModel, setPaginationModel] = useState({ pageSize: 10, page: 0 });
 
   const fetchTeachers = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const role = localStorage.getItem('role');
@@ -59,6 +61,8 @@ export default function TeacherTableWithPopup() {
       } else {
         console.error('Fetch error:', err);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -169,6 +173,7 @@ export default function TeacherTableWithPopup() {
       <DataGrid
         rows={teachers}
         columns={columns}
+        loading={loading}
         pagination
         pageSizeOptions={[10, 20, 50, 100]}
         paginationModel={paginationModel}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Autocomplete, TextField, Box } from '@mui/material';
 import axios from 'axios';
+import UnauthorizedHandler from './UnauthorizedHandler';
 
 export function SchoolSelectDropdown({ value, onChange }) {
   const [options, setOptions] = useState([]);
@@ -15,6 +16,7 @@ export function SchoolSelectDropdown({ value, onChange }) {
         });
         setOptions(res.data || []);
       } catch (err) {
+        UnauthorizedHandler(err);
         console.error('Failed to fetch schools:', err);
       }
     };
@@ -28,9 +30,7 @@ export function SchoolSelectDropdown({ value, onChange }) {
     <Box sx={{ minWidth: 250 }}>
       <Autocomplete
         options={options}
-        getOptionLabel={
-          (option) => (typeof option === 'string' ? option : option.school_code) // For selected value
-        }
+        getOptionLabel={(option) => (typeof option === 'string' ? option : option.school_code)}
         renderOption={(props, option) => (
           <Box component="li" {...props}>
             {option.school_code} - {option.school_name}

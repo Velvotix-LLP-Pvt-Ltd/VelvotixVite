@@ -1,11 +1,13 @@
 // icons
-import { IconSchool, IconBook, IconUsersGroup } from '@tabler/icons-react';
+import { IconSchool, IconBook, IconUsersGroup, IconListCheck, IconListDetails } from '@tabler/icons-react';
 
 // common icons map
 const icons = {
   IconSchool,
   IconBook,
-  IconUsersGroup
+  IconUsersGroup,
+  IconListCheck,
+  IconListDetails
 };
 
 // role-based menu definitions
@@ -39,6 +41,30 @@ const menus = {
           url: '/students',
           icon: icons.IconUsersGroup,
           breadcrumbs: true
+        },
+        {
+          id: 'attendance',
+          title: 'Attendance',
+          type: 'collapse',
+          icon: icons.IconKey,
+          children: [
+            {
+              id: 'mark',
+              title: 'Mark Attendance',
+              type: 'item',
+              url: '/mark',
+              icon: icons.IconListDetails,
+              breadcrumbs: true
+            },
+            {
+              id: 'attendancetracker',
+              title: 'Track Attendance',
+              type: 'item',
+              url: '/attendancetracker',
+              icon: icons.IconListCheck,
+              breadcrumbs: true
+            }
+          ]
         }
       ]
     }
@@ -64,6 +90,30 @@ const menus = {
           url: '/students',
           icon: icons.IconUsersGroup,
           breadcrumbs: true
+        },
+        {
+          id: 'attendance',
+          title: 'Attendance',
+          type: 'collapse',
+          icon: icons.IconKey,
+          children: [
+            {
+              id: 'mark',
+              title: 'Mark Attendance',
+              type: 'item',
+              url: '/mark',
+              icon: icons.IconListCheck,
+              breadcrumbs: true
+            },
+            {
+              id: 'attendancetracker',
+              title: 'Track Attendance',
+              type: 'item',
+              url: '/attendancetracker',
+              icon: icons.IconListCheck,
+              breadcrumbs: true
+            }
+          ]
         }
       ]
     }
@@ -81,6 +131,30 @@ const menus = {
           url: '/students',
           icon: icons.IconUsersGroup,
           breadcrumbs: true
+        },
+        {
+          id: 'attendance',
+          title: 'Attendance',
+          type: 'collapse',
+          icon: icons.IconKey,
+          children: [
+            {
+              id: 'mark',
+              title: 'Mark Attendance',
+              type: 'item',
+              url: '/mark',
+              icon: icons.IconListCheck,
+              breadcrumbs: true
+            },
+            {
+              id: 'attendancetracker',
+              title: 'Track Attendance',
+              type: 'item',
+              url: '/attendancetracker',
+              icon: icons.IconListCheck,
+              breadcrumbs: true
+            }
+          ]
         }
       ]
     }

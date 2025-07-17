@@ -31,6 +31,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SaveIcon from '@mui/icons-material/Save';
 import { IconEye } from '@tabler/icons-react';
 import ErrorIcon from '@mui/icons-material/Error';
+import UnauthorizedHandler from './UnauthorizedHandler';
 
 const InfoCard = ({ title, children }) => {
   const [expanded, setExpanded] = useState(true);
@@ -149,6 +150,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
             setFormData(res.data);
             setIsEditing(false); // Always start in view mode
           } catch (err) {
+            UnauthorizedHandler(err);
             console.error('Error fetching school:', err);
           }
         };
@@ -169,6 +171,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
       setTimeout(() => setSaveStatus(null), 3000);
       onClose(); // close dialog after successful save
     } catch (err) {
+      UnauthorizedHandler(err);
       console.error('Error creating school:', err);
       setSaveStatus('error');
     }

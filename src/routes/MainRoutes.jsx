@@ -18,6 +18,8 @@ const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 const Schools = Loadable(lazy(() => import('views/schools')));
 const Teachers = Loadable(lazy(() => import('views/teacher')));
 const Students = Loadable(lazy(() => import('views/students')));
+const Attendance = Loadable(lazy(() => import('views/attendance')));
+const MarkAttendance = Loadable(lazy(() => import('views/markAttendance')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -69,6 +71,14 @@ const MainRoutes = {
     {
       path: '/students',
       element: <Students />
+    },
+    {
+      path: '/attendancetracker',
+      element: <Attendance />
+    },
+    {
+      path: '/mark',
+      element: <MarkAttendance />
     }
   ]
 };
