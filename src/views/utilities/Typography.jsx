@@ -105,7 +105,7 @@ export default function Typography() {
                   overline text
                 </MuiTypography>
               </Grid>
-              <Grid>
+              {/* <Grid>
                 <MuiTypography
                   variant="body2"
                   color="primary"
@@ -118,7 +118,7 @@ export default function Typography() {
                 >
                   https://berrydashboard.com
                 </MuiTypography>
-              </Grid>
+              </Grid> */}
             </Grid>
           </SubCard>
         </Grid>

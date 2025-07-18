@@ -1,5 +1,5 @@
 // icons
-import { IconSchool, IconBook, IconUsersGroup, IconListCheck, IconListDetails } from '@tabler/icons-react';
+import { IconSchool, IconBook, IconUsersGroup, IconListCheck, IconListDetails, IconMoneybag } from '@tabler/icons-react';
 
 // common icons map
 const icons = {
@@ -7,7 +7,8 @@ const icons = {
   IconBook,
   IconUsersGroup,
   IconListCheck,
-  IconListDetails
+  IconListDetails,
+  IconMoneybag
 };
 
 // role-based menu definitions
@@ -61,6 +62,22 @@ const menus = {
               title: 'Track Attendance',
               type: 'item',
               url: '/attendancetracker',
+              icon: icons.IconKey,
+              breadcrumbs: true
+            }
+          ]
+        },
+        {
+          id: 'fees',
+          title: 'Fee Management',
+          type: 'collapse',
+          icon: icons.IconMoneybag,
+          children: [
+            {
+              id: 'feestructure',
+              title: 'Fee Structure',
+              type: 'item',
+              url: '/feestructure',
               icon: icons.IconKey,
               breadcrumbs: true
             }

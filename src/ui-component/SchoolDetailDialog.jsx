@@ -6,22 +6,15 @@ import {
   Grid,
   Typography,
   Box,
-  Card,
-  CardContent,
   IconButton,
   useMediaQuery,
-  FormControl,
   TextField,
   Tooltip,
   CircularProgress,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Checkbox,
-  FormControlLabel,
-  MenuItem,
-  Select,
-  InputLabel
+  FormControl
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTheme } from '@mui/material/styles';
@@ -32,10 +25,32 @@ import SaveIcon from '@mui/icons-material/Save';
 import { IconEye } from '@tabler/icons-react';
 import ErrorIcon from '@mui/icons-material/Error';
 import UnauthorizedHandler from './UnauthorizedHandler';
+import toast from 'react-hot-toast';
+
+const REQUIRED_FIELDS = [
+  'school_code',
+  'school_name',
+  'academic_year',
+  'established_year',
+  'school_category',
+  'school_type',
+  'school_management',
+  'affiliation_board',
+  'school_shift',
+  'school_building_status',
+  'academic_session_start_month',
+  'location.state',
+  'location.district',
+  'location.block',
+  'location.village_town',
+  'location.pin_code',
+  'headmaster.name',
+  'headmaster.mobile',
+  'headmaster.email'
+];
 
 const InfoCard = ({ title, children }) => {
   const [expanded, setExpanded] = useState(true);
-
   return (
     <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)} sx={{ mb: 2 }}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -50,21 +65,32 @@ const InfoCard = ({ title, children }) => {
   );
 };
 
-const InfoItem = ({ label, value, field, isEditing, onChange, type = 'text' }) => (
-  <Grid item xs={12} sm={6} md={4}>
-    <FormControl fullWidth>
-      <TextField
-        type={type}
-        label={label}
-        value={value || ''}
-        variant="outlined"
-        size="small"
-        disabled={!isEditing}
-        onChange={(e) => isEditing && onChange(field, e.target.value)}
-      />
-    </FormControl>
-  </Grid>
-);
+const InfoItem = ({ label, value, field, isEditing, onChange, type = 'text' }) => {
+  const isRequired = REQUIRED_FIELDS.includes(field);
+  return (
+    <Grid item xs={12} sm={6} md={4}>
+      <FormControl fullWidth>
+        <TextField
+          type={type}
+          label={
+            isRequired ? (
+              <span>
+                {label} <span style={{ color: 'red' }}>*</span>
+              </span>
+            ) : (
+              label
+            )
+          }
+          value={value || ''}
+          variant="outlined"
+          size="small"
+          disabled={!isEditing}
+          onChange={(e) => isEditing && onChange(field, e.target.value)}
+        />
+      </FormControl>
+    </Grid>
+  );
+};
 
 export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
   const [formData, setFormData] = useState(null);
@@ -72,7 +98,6 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
   const [saveStatus, setSaveStatus] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const isCreationMode = !schoolId;
 
   useEffect(() => {
@@ -148,7 +173,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
               headers: { Authorization: `Bearer ${token}` }
             });
             setFormData(res.data);
-            setIsEditing(false); // Always start in view mode
+            setIsEditing(false);
           } catch (err) {
             UnauthorizedHandler(err);
             console.error('Error fetching school:', err);
@@ -159,19 +184,42 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
     }
   }, [open, schoolId]);
 
+  const validateRequiredFields = (data) => {
+    for (const path of REQUIRED_FIELDS) {
+      const keys = path.split('.');
+      let val = data;
+      for (const key of keys) {
+        val = val?.[key];
+      }
+      if (val === undefined || val === null || val === '') {
+        return { isValid: false, missingField: path.split('.').pop().replace(/_/g, ' ') };
+      }
+    }
+    return { isValid: true };
+  };
+
   const handleCreateSchool = async () => {
     setSaveStatus('saving');
+
+    const validation = validateRequiredFields(formData);
+    if (!validation.isValid) {
+      toast.error(`❗ Please fill required field: ${validation.missingField}`);
+      setSaveStatus('error');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const res = await axios.post(`${import.meta.env.VITE_APP_API_URL}/schools`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('School created:', res.data);
+      toast.success('School created successfully ✅');
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 3000);
-      onClose(); // close dialog after successful save
+      onClose();
     } catch (err) {
       UnauthorizedHandler(err);
+      toast.error('❌ Failed to create school');
       console.error('Error creating school:', err);
       setSaveStatus('error');
     }

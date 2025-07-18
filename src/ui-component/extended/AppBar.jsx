@@ -102,14 +102,14 @@ export default function AppBar({ ...others }) {
                           <ListItemText primary="Dashboard" />
                         </ListItemButton>
                       </Link>
-                      <Link sx={{ textDecoration: 'none' }} href="https://codedthemes.gitbook.io/berry" target="_blank">
+                      {/* <Link sx={{ textDecoration: 'none' }} href="https://codedthemes.gitbook.io/berry" target="_blank">
                         <ListItemButton component="a">
                           <ListItemIcon>
                             <IconBook />
                           </ListItemIcon>
                           <ListItemText primary="Documentation" />
                         </ListItemButton>
-                      </Link>
+                      </Link> */}
                       <Link sx={{ textDecoration: 'none' }} href="https://links.codedthemes.com/hsqll" target="_blank">
                         <ListItemButton component="a">
                           <ListItemIcon>

@@ -20,6 +20,7 @@ const Teachers = Loadable(lazy(() => import('views/teacher')));
 const Students = Loadable(lazy(() => import('views/students')));
 const Attendance = Loadable(lazy(() => import('views/attendance')));
 const MarkAttendance = Loadable(lazy(() => import('views/markAttendance')));
+const FeeStructureView = Loadable(lazy(() => import('views/feestructure')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -79,6 +80,10 @@ const MainRoutes = {
     {
       path: '/mark',
       element: <MarkAttendance />
+    },
+    {
+      path: '/feestructure',
+      element: <FeeStructureView />
     }
   ]
 };

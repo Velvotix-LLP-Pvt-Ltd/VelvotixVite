@@ -1,22 +1,25 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Typography } from '@mui/material';
 import { RiseLoader } from 'react-spinners';
 
 export default function AuthGuard({ children }) {
   const navigate = useNavigate();
+  const location = useLocation(); // 🔁 Detects route change
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      navigate('/auth/login', { replace: true });
-      return;
-    }
-
     const checkToken = async () => {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        navigate('/auth/login', { replace: true });
+        return;
+      }
+
+      setLoading(true); // Show loader during validation
+
       try {
         const response = await axios.get(`${import.meta.env.VITE_APP_API_URL}/checktoken`, {
           headers: {
@@ -25,7 +28,7 @@ export default function AuthGuard({ children }) {
         });
 
         if (response.data?.valid) {
-          setLoading(false);
+          setLoading(false); // Token valid, hide loader
         } else {
           localStorage.removeItem('token');
           navigate('/auth/login', { replace: true });
@@ -37,7 +40,7 @@ export default function AuthGuard({ children }) {
     };
 
     checkToken();
-  }, [navigate]);
+  }, [location.pathname, navigate]); // ✅ Re-run on every route change
 
   return (
     <>
