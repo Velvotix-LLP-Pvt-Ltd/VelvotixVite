@@ -46,14 +46,14 @@ const menus = {
           id: 'attendance',
           title: 'Attendance',
           type: 'collapse',
-          icon: icons.IconKey,
+          icon: icons.IconListCheck,
           children: [
             {
               id: 'mark',
               title: 'Mark Attendance',
               type: 'item',
               url: '/mark',
-              icon: icons.IconListDetails,
+              icon: icons.IconKey,
               breadcrumbs: true
             },
             {
@@ -61,7 +61,7 @@ const menus = {
               title: 'Track Attendance',
               type: 'item',
               url: '/attendancetracker',
-              icon: icons.IconListCheck,
+              icon: icons.IconKey,
               breadcrumbs: true
             }
           ]
