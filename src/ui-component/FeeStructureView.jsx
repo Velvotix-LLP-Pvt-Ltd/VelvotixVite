@@ -193,7 +193,7 @@ const FeeStructureView = () => {
         </Fade>
       )}
 
-      <FeeStructurePopupDialog open={dialogOpen} onClose={handleDialogClose} data={selectedStructure} />
+      <FeeStructurePopupDialog open={dialogOpen} onClose={handleDialogClose} feeStructureId={selectedStructure?.id} />
       <SchoolDetailsDialog open={schoolDialogOpen} onClose={() => setSchoolDialogOpen(false)} schoolId={selectedSchoolId} mode="view" />
       <ConfirmDialog
         open={confirmOpen}

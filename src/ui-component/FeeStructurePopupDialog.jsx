@@ -15,7 +15,7 @@ export default function FeeStructurePopupDialog({ open, onClose, feeStructureId 
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'));
-
+  console.log(JSON.stringify(feeStructureId));
   const role = localStorage.getItem('role');
   const id = localStorage.getItem('id');
   const isCreationMode = !feeStructureId;

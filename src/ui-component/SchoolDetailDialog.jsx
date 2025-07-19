@@ -27,6 +27,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import UnauthorizedHandler from './UnauthorizedHandler';
 import toast from 'react-hot-toast';
 
+// ✅ Required fields
 const REQUIRED_FIELDS = [
   'school_code',
   'school_name',
@@ -49,6 +50,7 @@ const REQUIRED_FIELDS = [
   'headmaster.email'
 ];
 
+// ✅ Accordion wrapper
 const InfoCard = ({ title, children }) => {
   const [expanded, setExpanded] = useState(true);
   return (
@@ -65,28 +67,42 @@ const InfoCard = ({ title, children }) => {
   );
 };
 
+// ✅ Updated InfoItem: supports checkboxes for booleans
 const InfoItem = ({ label, value, field, isEditing, onChange, type = 'text' }) => {
   const isRequired = REQUIRED_FIELDS.includes(field);
+  const isBoolean = typeof value === 'boolean';
+
   return (
     <Grid item xs={12} sm={6} md={4}>
       <FormControl fullWidth>
-        <TextField
-          type={type}
-          label={
-            isRequired ? (
-              <span>
-                {label} <span style={{ color: 'red' }}>*</span>
-              </span>
-            ) : (
-              label
-            )
-          }
-          value={value || ''}
-          variant="outlined"
-          size="small"
-          disabled={!isEditing}
-          onChange={(e) => isEditing && onChange(field, e.target.value)}
-        />
+        {isBoolean ? (
+          <Box display="flex" alignItems="center" sx={{ pl: 1 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <input type="checkbox" checked={value} disabled={!isEditing} onChange={(e) => onChange(field, e.target.checked)} />
+              <Typography variant="body2">
+                {label} {isRequired && <span style={{ color: 'red' }}> *</span>}
+              </Typography>
+            </label>
+          </Box>
+        ) : (
+          <TextField
+            type={type}
+            label={
+              isRequired ? (
+                <span>
+                  {label} <span style={{ color: 'red' }}>*</span>
+                </span>
+              ) : (
+                label
+              )
+            }
+            value={value ?? ''}
+            variant="outlined"
+            size="small"
+            disabled={!isEditing}
+            onChange={(e) => onChange(field, e.target.value)}
+          />
+        )}
       </FormControl>
     </Grid>
   );
@@ -188,29 +204,24 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
     for (const path of REQUIRED_FIELDS) {
       const keys = path.split('.');
       let val = data;
-      for (const key of keys) {
-        val = val?.[key];
-      }
-      if (val === undefined || val === null || val === '') {
+      for (const key of keys) val = val?.[key];
+      if (val === undefined || val === null || val === '')
         return { isValid: false, missingField: path.split('.').pop().replace(/_/g, ' ') };
-      }
     }
     return { isValid: true };
   };
 
   const handleCreateSchool = async () => {
     setSaveStatus('saving');
-
     const validation = validateRequiredFields(formData);
     if (!validation.isValid) {
       toast.error(`❗ Please fill required field: ${validation.missingField}`);
       setSaveStatus('error');
       return;
     }
-
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`${import.meta.env.VITE_APP_API_URL}/schools`, formData, {
+      await axios.post(`${import.meta.env.VITE_APP_API_URL}/schools`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('School created successfully ✅');
@@ -220,7 +231,6 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
     } catch (err) {
       UnauthorizedHandler(err);
       toast.error('❌ Failed to create school');
-      console.error('Error creating school:', err);
       setSaveStatus('error');
     }
   };
@@ -240,6 +250,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
     return null;
   };
 
+  // Properly update boolean fields
   const handleChange = (fieldPath, value) => {
     const keys = fieldPath.split('.');
     setFormData((prev) => {
@@ -249,7 +260,13 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
         if (!obj[keys[i]]) obj[keys[i]] = {};
         obj = obj[keys[i]];
       }
-      obj[keys[keys.length - 1]] = value;
+      const lastKey = keys[keys.length - 1];
+      const currentVal = obj[lastKey];
+      if (typeof currentVal === 'boolean') {
+        obj[lastKey] = !!value;
+      } else {
+        obj[lastKey] = value;
+      }
       if (!isCreationMode) autoSaveUpdate(updated);
       return updated;
     });
@@ -259,15 +276,14 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
     setSaveStatus('saving');
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put(`${import.meta.env.VITE_APP_API_URL}/schools/${schoolId}`, data, {
+      await axios.put(`${import.meta.env.VITE_APP_API_URL}/schools/${schoolId}`, data, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('Auto-save success:', res.data);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
-      console.error('Auto-save error:', err);
       setSaveStatus('error');
+      console.error('Auto-save error:', err);
     }
   };
 
@@ -301,6 +317,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
       <DialogContent dividers sx={{ p: 3 }}>
         {formData && (
           <Box>
+            {/* Basic Details Section */}
             <InfoCard title="Basic Details">
               <InfoItem
                 label="School Code"
@@ -368,7 +385,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 onChange={handleChange}
               />
             </InfoCard>
-
+            {/* Location Section */}
             {formData.location && (
               <InfoCard title="Location">
                 {Object.entries(formData.location).map(([key, val]) =>
@@ -385,7 +402,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                     Object.entries(val).map(([k, v]) => (
                       <InfoItem
                         key={`${key}.${k}`}
-                        label={`${k}`}
+                        label={k}
                         value={v}
                         field={`location.${key}.${k}`}
                         isEditing={isEditing}
@@ -396,7 +413,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 )}
               </InfoCard>
             )}
-
+            {/* Headmaster Section */}
             {formData.headmaster && (
               <InfoCard title="Headmaster">
                 <InfoItem
@@ -422,7 +439,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 />
               </InfoCard>
             )}
-
+            {/* Enrollment Section */}
             {formData.enrollment_summary && (
               <InfoCard title="Enrollment">
                 <InfoItem
@@ -455,7 +472,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 />
               </InfoCard>
             )}
-
+            {/* Staff Section */}
             {formData.staff_summary && (
               <InfoCard title="Staff">
                 <InfoItem
@@ -495,7 +512,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 />
               </InfoCard>
             )}
-
+            {/* Infrastructure Section */}
             {formData.infrastructure && (
               <InfoCard title="Infrastructure">
                 <InfoItem
@@ -518,21 +535,21 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                   ))}
                 <InfoItem
                   label="Electricity"
-                  value={formData.infrastructure.electricity ? 'Yes' : 'No'}
+                  value={formData.infrastructure.electricity}
                   field="infrastructure.electricity"
                   isEditing={isEditing}
                   onChange={handleChange}
                 />
                 <InfoItem
                   label="Internet"
-                  value={formData.infrastructure.internet ? 'Yes' : 'No'}
+                  value={formData.infrastructure.internet}
                   field="infrastructure.internet"
                   isEditing={isEditing}
                   onChange={handleChange}
                 />
                 <InfoItem
                   label="Computer Lab"
-                  value={formData.infrastructure.computer_lab ? 'Yes' : 'No'}
+                  value={formData.infrastructure.computer_lab}
                   field="infrastructure.computer_lab"
                   isEditing={isEditing}
                   onChange={handleChange}
@@ -548,7 +565,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                   <>
                     <InfoItem
                       label="Library Available"
-                      value={formData.infrastructure.library.available ? 'Yes' : 'No'}
+                      value={formData.infrastructure.library.available}
                       field="infrastructure.library.available"
                       isEditing={isEditing}
                       onChange={handleChange}
@@ -564,7 +581,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 )}
                 <InfoItem
                   label="Playground"
-                  value={formData.infrastructure.playground ? 'Yes' : 'No'}
+                  value={formData.infrastructure.playground}
                   field="infrastructure.playground"
                   isEditing={isEditing}
                   onChange={handleChange}
@@ -578,21 +595,21 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 />
                 <InfoItem
                   label="Ramp Available"
-                  value={formData.infrastructure.ramp_available ? 'Yes' : 'No'}
+                  value={formData.infrastructure.ramp_available}
                   field="infrastructure.ramp_available"
                   isEditing={isEditing}
                   onChange={handleChange}
                 />
                 <InfoItem
                   label="Kitchen Shed"
-                  value={formData.infrastructure.kitchen_shed ? 'Yes' : 'No'}
+                  value={formData.infrastructure.kitchen_shed}
                   field="infrastructure.kitchen_shed"
                   isEditing={isEditing}
                   onChange={handleChange}
                 />
               </InfoCard>
             )}
-
+            {/* Toilets Section */}
             {formData.toilets && (
               <InfoCard title="Toilets">
                 {['boys', 'girls', 'cwsn'].map(
@@ -611,12 +628,12 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 )}
               </InfoCard>
             )}
-
+            {/* Water Facility Section */}
             {formData.water_facility && (
               <InfoCard title="Water Facility">
                 <InfoItem
                   label="Drinking Water Available"
-                  value={formData.water_facility.drinking_water_available ? 'Yes' : 'No'}
+                  value={formData.water_facility.drinking_water_available}
                   field="water_facility.drinking_water_available"
                   isEditing={isEditing}
                   onChange={handleChange}
@@ -630,19 +647,19 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 />
               </InfoCard>
             )}
-
+            {/* Mid Day Meal Section */}
             {formData.mid_day_meal && (
               <InfoCard title="Mid Day Meal">
                 <InfoItem
                   label="Provided"
-                  value={formData.mid_day_meal.provided ? 'Yes' : 'No'}
+                  value={formData.mid_day_meal.provided}
                   field="mid_day_meal.provided"
                   isEditing={isEditing}
                   onChange={handleChange}
                 />
                 <InfoItem
                   label="Cooked on Premises"
-                  value={formData.mid_day_meal.cooked_on_premises ? 'Yes' : 'No'}
+                  value={formData.mid_day_meal.cooked_on_premises}
                   field="mid_day_meal.cooked_on_premises"
                   isEditing={isEditing}
                   onChange={handleChange}
@@ -656,7 +673,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 />
               </InfoCard>
             )}
-
+            {/* Last Inspection Section */}
             {formData.school_inspection && (
               <InfoCard title="Last Inspection">
                 <InfoItem
@@ -682,7 +699,7 @@ export default function SchoolDetailsDialog({ open, onClose, schoolId }) {
                 />
               </InfoCard>
             )}
-
+            {/* Miscellaneous */}
             <InfoCard title="Miscellaneous">
               <InfoItem
                 label="PTA Meetings Last Year"
