@@ -269,7 +269,7 @@ const InvoiceDialog = ({ open, onClose, payment }) => {
     document.body.innerHTML = printContents;
     window.print();
     document.body.innerHTML = originalContents;
-    window.location.reload();
+    // window.location.reload();
   };
 
   return (
