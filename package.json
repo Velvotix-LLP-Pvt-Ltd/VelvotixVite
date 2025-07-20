@@ -17,6 +17,7 @@
     "apexcharts": "4.7.0",
     "axios": "^1.10.0",
     "dayjs": "^1.11.13",
+    "dayjs-plugin-utc": "^0.1.2",
     "framer-motion": "12.10.1",
     "lodash-es": "4.17.21",
     "material-ui-popup-state": "5.3.5",
