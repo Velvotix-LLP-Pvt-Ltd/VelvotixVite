@@ -18,7 +18,7 @@ export default function AuthGuard({ children }) {
         return;
       }
 
-      setLoading(true);
+      setLoading(true); // Show loader during validation
 
       try {
         const response = await axios.get(`${import.meta.env.VITE_APP_API_URL}/checktoken`, {

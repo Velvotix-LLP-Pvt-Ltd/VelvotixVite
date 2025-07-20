@@ -23,7 +23,7 @@ import FeeStructurePopupDialog from './FeeStructurePopupDialog';
 import SchoolDetailsDialog from './SchoolDetailDialog';
 import ConfirmDialog from './ConfirmDialog';
 import { SchoolSelectDropdown } from './schoolDropdowns';
-import UnauthorizedHandler from './UnauthorizedHandler'; // if you use this
+import UnauthorizedHandler from './UnauthorizedHandler';
 
 const FeeStructureView = () => {
   const theme = useTheme();

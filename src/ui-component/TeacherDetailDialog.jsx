@@ -10,7 +10,9 @@ import {
   CircularProgress,
   TextField,
   Grid,
-  MenuItem
+  MenuItem,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
@@ -272,13 +274,18 @@ export default function TeacherDetailsDialog({ open, onClose, teacherId, schoolV
               isEditing={isEditing}
               onChange={handleChange}
             />
-            <InfoItem
-              label="Trained"
-              value={formData.trained ? 'Yes' : 'No'}
-              field="trained"
-              isEditing={isEditing}
-              onChange={(f, val) => handleChange(f, val === 'Yes')}
-            />
+            <Grid item xs={12} sm={6}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={!!formData.trained}
+                    onChange={(e) => handleChange('trained', e.target.checked)}
+                    disabled={!isEditing}
+                  />
+                }
+                label="Trained"
+              />
+            </Grid>
             {isCreationMode && (
               <InfoItem label="Password" value={formData.password} field="password" isEditing={true} onChange={handleChange} />
             )}
