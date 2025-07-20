@@ -80,6 +80,14 @@ const menus = {
               url: '/feestructure',
               icon: icons.IconKey,
               breadcrumbs: true
+            },
+            {
+              id: 'payment',
+              title: 'Payment Form',
+              type: 'item',
+              url: '/payment',
+              icon: icons.IconKey,
+              breadcrumbs: true
             }
           ]
         }
@@ -128,6 +136,30 @@ const menus = {
               type: 'item',
               url: '/attendancetracker',
               icon: icons.IconListCheck,
+              breadcrumbs: true
+            }
+          ]
+        },
+        {
+          id: 'fees',
+          title: 'Fee Management',
+          type: 'collapse',
+          icon: icons.IconMoneybag,
+          children: [
+            {
+              id: 'feestructure',
+              title: 'Fee Structure',
+              type: 'item',
+              url: '/feestructure',
+              icon: icons.IconKey,
+              breadcrumbs: true
+            },
+            {
+              id: 'payment',
+              title: 'Payment Form',
+              type: 'item',
+              url: '/payment',
+              icon: icons.IconKey,
               breadcrumbs: true
             }
           ]

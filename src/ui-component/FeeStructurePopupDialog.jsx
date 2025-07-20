@@ -8,6 +8,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import axios from 'axios';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { SchoolSelectDropdown } from './schoolDropdowns';
+import { ClassSelectDropdown } from './ClassSelectDropdown';
 import UnauthorizedHandler from './UnauthorizedHandler';
 
 export default function FeeStructurePopupDialog({ open, onClose, feeStructureId }) {
@@ -15,10 +16,10 @@ export default function FeeStructurePopupDialog({ open, onClose, feeStructureId 
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'));
-  console.log(JSON.stringify(feeStructureId));
   const role = localStorage.getItem('role');
   const id = localStorage.getItem('id');
   const isCreationMode = !feeStructureId;
+  const [classOptions, setClassOptions] = useState([]);
 
   useEffect(() => {
     if (open) {
@@ -45,9 +46,18 @@ export default function FeeStructurePopupDialog({ open, onClose, feeStructureId 
             .then((res) => {
               empty.school_code = res.data.school_code;
               setFormData(empty);
-            });
+              // Fetch class options for the school
+              return axios.get(`${import.meta.env.VITE_APP_API_URL}/schools/${res.data.school_code}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+            })
+            .then((res) => {
+              setClassOptions(res.data.classes_offered || []);
+            })
+            .catch((err) => console.error('Error initializing school and classes:', err));
         } else {
           setFormData(empty);
+          setClassOptions([]);
         }
         setIsEditing(true);
       } else {
@@ -65,6 +75,7 @@ export default function FeeStructurePopupDialog({ open, onClose, feeStructureId 
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = res.data;
+      setClassOptions(data?.school?.classes_offered);
       const flat = {
         ...data,
         school_code: data.school?.school_code || ''
@@ -76,6 +87,20 @@ export default function FeeStructurePopupDialog({ open, onClose, feeStructureId 
       console.error('Fetch error:', err);
     }
   };
+
+  useEffect(() => {
+    if (isCreationMode && role === 'Admin' && formData?.school_code) {
+      const token = localStorage.getItem('token');
+      axios
+        .get(`${import.meta.env.VITE_APP_API_URL}/schools/${formData.school_code}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then((res) => {
+          setClassOptions(res.data.classes_offered || []);
+        })
+        .catch((err) => console.error('Failed to fetch class options:', err));
+    }
+  }, [formData?.school_code]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => {
@@ -186,13 +211,11 @@ export default function FeeStructurePopupDialog({ open, onClose, feeStructureId 
             )}
 
             <Grid item xs={12} sm={6}>
-              <TextField
-                label="Class"
-                value={formData.class || ''}
-                onChange={(e) => handleChange('class', e.target.value)}
-                fullWidth
-                size="small"
-                disabled={!isEditing}
+              <ClassSelectDropdown
+                editable={isEditing}
+                value={formData.class}
+                onChange={(value) => handleChange('class', value)}
+                options={classOptions}
               />
             </Grid>
 

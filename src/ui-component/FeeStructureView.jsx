@@ -23,6 +23,7 @@ import FeeStructurePopupDialog from './FeeStructurePopupDialog';
 import SchoolDetailsDialog from './SchoolDetailDialog';
 import ConfirmDialog from './ConfirmDialog';
 import { SchoolSelectDropdown } from './schoolDropdowns';
+import UnauthorizedHandler from './UnauthorizedHandler'; // if you use this
 
 const FeeStructureView = () => {
   const theme = useTheme();
@@ -37,34 +38,71 @@ const FeeStructureView = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState('');
   const [viewMode, setViewMode] = useState('table');
+  const [showSchoolDropdown, setShowSchoolDropdown] = useState(false);
 
-  const fetchFeeStructures = async () => {
-    if (!selectedSchool) return;
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/fee/fee-structure?school_code=${selectedSchool}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  const role = localStorage.getItem('role');
+  const userId = localStorage.getItem('id');
+  const token = localStorage.getItem('token');
 
-      const formatted = res.data.map((item) => ({
-        id: item._id,
-        ...item,
-        school_code: item.school?.school_code || '',
-        school_id: item.school?._id || '',
-        tuitionFee: item.feeBreakup?.tuition || 0,
-        admissionFee: item.feeBreakup?.admission || 0,
-        examFee: item.feeBreakup?.exam || 0,
-        transportFee: item.feeBreakup?.transport || 0,
-        otherFee: item.feeBreakup?.other || 0
-      }));
-
-      setFeeStructures(formatted);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  // Determine school for non-admin users
   useEffect(() => {
+    const fetchSchoolCode = async () => {
+      if (role === 'Admin') {
+        setShowSchoolDropdown(true);
+        return;
+      }
+
+      try {
+        let url = '';
+        if (role === 'School') url = `/schools/${userId}`;
+        else if (role === 'Teacher') url = `/teachers/${userId}`;
+        else if (role === 'Student') url = `/students/${userId}`;
+        else return;
+
+        const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}${url}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const schoolCode = role === 'School' ? res.data.school_code : res.data.school?.school_code;
+        setSelectedSchool(schoolCode);
+        setShowSchoolDropdown(false);
+      } catch (err) {
+        UnauthorizedHandler(err);
+        console.error(`Failed to fetch school code for ${role}:`, err);
+      }
+    };
+
+    fetchSchoolCode();
+  }, [role, userId, token]);
+
+  // Fetch fee structures when school changes
+  useEffect(() => {
+    const fetchFeeStructures = async () => {
+      if (!selectedSchool) return;
+
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/fee/fee-structure?school_code=${selectedSchool}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const formatted = res.data.map((item) => ({
+          id: item._id,
+          ...item,
+          school_code: item.school?.school_code || '',
+          school_id: item.school?._id || '',
+          tuitionFee: item.feeBreakup?.tuition || 0,
+          admissionFee: item.feeBreakup?.admission || 0,
+          examFee: item.feeBreakup?.exam || 0,
+          transportFee: item.feeBreakup?.transport || 0,
+          otherFee: item.feeBreakup?.other || 0
+        }));
+
+        setFeeStructures(formatted);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
     fetchFeeStructures();
   }, [selectedSchool]);
 
@@ -76,7 +114,6 @@ const FeeStructureView = () => {
   const handleDialogClose = () => {
     setDialogOpen(false);
     setSelectedStructure(null);
-    fetchFeeStructures();
   };
 
   const handleDelete = async () => {
@@ -141,14 +178,16 @@ const FeeStructureView = () => {
   return (
     <Box sx={{ p: 2 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap">
-        <SchoolSelectDropdown
-          label="School Code"
-          value={selectedSchool}
-          onChange={(e) => {
-            const newValue = e?.target?.value ?? e;
-            setSelectedSchool(newValue);
-          }}
-        />
+        {showSchoolDropdown && (
+          <SchoolSelectDropdown
+            label="School Code"
+            value={selectedSchool}
+            onChange={(e) => {
+              const newValue = e?.target?.value ?? e;
+              setSelectedSchool(newValue);
+            }}
+          />
+        )}
 
         <ToggleButtonGroup value={viewMode} exclusive onChange={(e, val) => val && setViewMode(val)}>
           <ToggleButton value="table">

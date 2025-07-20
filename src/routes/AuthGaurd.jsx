@@ -6,7 +6,7 @@ import { RiseLoader } from 'react-spinners';
 
 export default function AuthGuard({ children }) {
   const navigate = useNavigate();
-  const location = useLocation(); // 🔁 Detects route change
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function AuthGuard({ children }) {
         return;
       }
 
-      setLoading(true); // Show loader during validation
+      setLoading(true);
 
       try {
         const response = await axios.get(`${import.meta.env.VITE_APP_API_URL}/checktoken`, {
@@ -28,7 +28,7 @@ export default function AuthGuard({ children }) {
         });
 
         if (response.data?.valid) {
-          setLoading(false); // Token valid, hide loader
+          setLoading(false);
         } else {
           localStorage.removeItem('token');
           navigate('/auth/login', { replace: true });
@@ -40,7 +40,7 @@ export default function AuthGuard({ children }) {
     };
 
     checkToken();
-  }, [location.pathname, navigate]); // ✅ Re-run on every route change
+  }, [location.pathname, navigate]);
 
   return (
     <>

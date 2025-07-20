@@ -13,6 +13,7 @@ import {
   Checkbox,
   FormControlLabel
 } from '@mui/material';
+import { ClassSelectDropdown } from './ClassSelectDropdown';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import { IconEye } from '@tabler/icons-react';
@@ -28,6 +29,7 @@ export default function StudentPopupDialog({ open, onClose, studentId }) {
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'));
+  const [classOptions, setClassOptions] = useState([]);
 
   const role = localStorage.getItem('role');
   const id = localStorage.getItem('id');
@@ -75,10 +77,20 @@ export default function StudentPopupDialog({ open, onClose, studentId }) {
             .then((res) => {
               empty.school_code = res.data.school_code;
               setFormData(empty);
-            });
+              // Fetch class options for the school
+              return axios.get(`${import.meta.env.VITE_APP_API_URL}/schools/${res.data.school_code}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+            })
+            .then((res) => {
+              setClassOptions(res.data.classes_offered || []);
+            })
+            .catch((err) => console.error('Error initializing school and classes:', err));
         } else {
           setFormData(empty);
+          setClassOptions([]);
         }
+
         setIsEditing(true);
       } else {
         fetchStudent();
@@ -88,13 +100,29 @@ export default function StudentPopupDialog({ open, onClose, studentId }) {
     }
   }, [open]);
 
+  useEffect(() => {
+    if (isCreationMode && role === 'Admin' && formData?.school_code) {
+      const token = localStorage.getItem('token');
+      axios
+        .get(`${import.meta.env.VITE_APP_API_URL}/schools/${formData.school_code}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then((res) => {
+          setClassOptions(res.data.classes_offered || []);
+        })
+        .catch((err) => console.error('Failed to fetch class options:', err));
+    }
+  }, [formData?.school_code]);
+
   const fetchStudent = async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/students/${studentId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       const data = res.data;
+      setClassOptions(data?.school?.classes_offered);
       const flat = {
         ...data,
         school_code: data.school?.school_code || ''
@@ -238,14 +266,23 @@ export default function StudentPopupDialog({ open, onClose, studentId }) {
               'motherName'
             ].map((field) => (
               <Grid item xs={12} sm={6} key={field}>
-                <TextField
-                  label={field.replace(/([A-Z])/g, ' $1')}
-                  value={formData[field] || ''}
-                  onChange={(e) => handleChange(field, e.target.value)}
-                  fullWidth
-                  size="small"
-                  disabled={!isEditing}
-                />
+                {field === 'class' ? (
+                  <ClassSelectDropdown
+                    value={formData.class}
+                    onChange={(value) => handleChange('class', value)}
+                    options={classOptions}
+                    editable={isEditing}
+                  />
+                ) : (
+                  <TextField
+                    label={field.replace(/([A-Z])/g, ' $1')}
+                    value={formData[field] || ''}
+                    onChange={(e) => handleChange(field, e.target.value)}
+                    fullWidth
+                    size="small"
+                    disabled={!isEditing}
+                  />
+                )}
               </Grid>
             ))}
 
